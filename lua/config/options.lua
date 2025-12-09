@@ -29,3 +29,8 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
   desc = "Disable New Line Comment",
 })
+
+-- Set root detection priority.
+-- Default is usually { "lsp", { ".git", "lua" }, "cwd" }
+-- We add "cwd" (Current Working Directory) earlier to force it to respect where you actually are.
+vim.g.root_spec = { "cwd", "lsp", { ".git", "lua" } }
