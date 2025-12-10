@@ -21,6 +21,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- Setting absolute line number
 vim.opt.relativenumber = false
+vim.opt.wrap = true
 
 -- Disable automatic comment continuations
 vim.api.nvim_create_autocmd("BufEnter", {
