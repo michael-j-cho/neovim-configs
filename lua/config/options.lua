@@ -33,8 +33,3 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 -- Tell Neovim strictly which Python executable to use
 vim.g.python3_host_prog = vim.fn.expand("~/.config/nvim/venv/bin/python")
-
--- Set root detection priority.
--- Default is usually { "lsp", { ".git", "lua" }, "cwd" }
--- We add "cwd" (Current Working Directory) earlier to force it to respect where you actually are.
--- vim.g.root_spec = { "cwd", "lsp", { ".git", "lua" } }
