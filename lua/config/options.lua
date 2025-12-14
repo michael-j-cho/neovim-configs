@@ -1,35 +1,39 @@
--- Options are automatically loaded before lazy.nvim startup
--- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
--- Add any additional options here
--- In your init.lua or options.lua
+print("OPTIONS LOADED")
 
--- For yanking within LazyVim to paste on local computer (for SSH)
+-- Relative line numbers
+vim.opt.number = true
+vim.opt.relativenumber = true
+
+vim.opt.wrap = true
 vim.opt.clipboard = ""
+
+-- Choose correct environment for python
+vim.g.python3_host_prog = vim.fn.expand("~/.config/nvim/venv/bin/python")
+
+-- Clipboard pasting across ssh instnaces
 vim.api.nvim_create_autocmd("TextYankPost", {
   callback = function()
-    -- Check if we are yanking (not deleting)
     if vim.v.event.operator == "y" then
-      -- Get the yanked text
       local yanked_text = vim.fn.getreg('"')
-
-      -- Send it to the terminal via OSC 52
-      require("vim.ui.clipboard.osc52").copy("+")(vim.split(yanked_text, "\n"))
+      -- Ensure we are on Neovim 0.10+ for this require to work
+      local ok, osc52 = pcall(require, "vim.ui.clipboard.osc52")
+      if ok then
+        osc52.copy("+")(vim.split(yanked_text, "\n"))
+      end
     end
   end,
   desc = "Copy to OSC52 (System Clipboard) on Yank",
 })
 
--- Setting absolute line number
-vim.opt.relativenumber = false
-vim.opt.wrap = true
-
--- Disable automatic comment continuations
+-- Disable auto comments
 vim.api.nvim_create_autocmd("BufEnter", {
   callback = function()
     vim.opt.formatoptions:remove({ "c", "r", "o" })
-  end,
-  desc = "Disable New Line Comment",
-})
 
--- Tell Neovim strictly which Python executable to use
-vim.g.python3_host_prog = vim.fn.expand("~/.config/nvim/venv/bin/python")
+    -- FORCE relative numbers here.
+    -- This overrides any plugin that turned them off.
+    vim.opt.relativenumber = true
+    vim.opt.number = true
+  end,
+  desc = "Enforce format options and Line Numbers",
+})
