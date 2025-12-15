@@ -34,6 +34,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
     -- This overrides any plugin that turned them off.
     vim.opt.relativenumber = true
     vim.opt.number = true
+    vim.opt.wrap = true
   end,
   desc = "Enforce format options and Line Numbers",
 })
