@@ -11,6 +11,7 @@ return {
     "3rd/image.nvim",
   },
   opts = {
+    image_support = true,
     arg = "leetcode.nvim",
     lang = "python3",
     domain = "com",
