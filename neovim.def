@@ -14,8 +14,10 @@ From: ubuntu:24.04
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 
     # Update again and install base tools + Node.js 22
+    # Added python3-venv (crucial for python dev)
     apt-get update && apt-get install -y \
         nodejs \
+        python3-venv \
         wget \
         git \
         build-essential \
@@ -56,6 +58,18 @@ From: ubuntu:24.04
     # --- 7. Install Tree-sitter CLI ---
     npm install -g tree-sitter-cli
 
+    # --- 8. Install Ruff (Linter & Formatter) ---
+    echo "Installing Ruff..."
+    # 1. Get the latest tag (e.g., v0.8.2)
+    RUFF_TAG=$(curl -s "https://api.github.com/repos/astral-sh/ruff/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
+    # 2. Download the official linux-gnu binary
+    curl -LO "https://github.com/astral-sh/ruff/releases/download/${RUFF_TAG}/ruff-x86_64-unknown-linux-gnu.tar.gz"
+    # 3. Extract and move to path
+    tar -xzf ruff-x86_64-unknown-linux-gnu.tar.gz
+    cp ruff-x86_64-unknown-linux-gnu/ruff /usr/local/bin/ruff
+    # 4. Cleanup
+    rm -rf ruff-x86_64-unknown-linux-gnu ruff-x86_64-unknown-linux-gnu.tar.gz
+
     # --- Cleanup ---
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -66,11 +80,11 @@ From: ubuntu:24.04
     export LANG=en_US.UTF-8
     export XDG_CONFIG_HOME=$HOME/.config
     
-    # FORCE INTERNAL COMPILERS (Fixes the "gcc not found" / panic errors)
+    # FORCE INTERNAL COMPILERS
     export CC=/usr/bin/gcc
     export CXX=/usr/bin/g++
     
-    # 2. Unset host include paths so GCC finds standard headers (stdbool.h, etc.)
+    # Unset host include paths
     unset CPATH
     unset C_INCLUDE_PATH
     unset CPLUS_INCLUDE_PATH
@@ -81,6 +95,7 @@ From: ubuntu:24.04
 
 %labels
     Author User
-    Version 1.1
+    Version 1.2
     NeovimVersion v0.11.5
     NodeVersion v22.x
+    RuffVersion Latest
