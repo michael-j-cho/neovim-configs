@@ -1,0 +1,86 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post
+    # --- 1. System Dependencies ---
+    export DEBIAN_FRONTEND=noninteractive
+    
+    # Install curl/ca-certificates first to set up repos
+    apt-get update && apt-get install -y curl ca-certificates gnupg
+
+    # --- 2. Set up Node.js 22 Repository ---
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+
+    # Update again and install base tools + Node.js 22
+    apt-get update && apt-get install -y \
+        nodejs \
+        wget \
+        git \
+        build-essential \
+        unzip \
+        tar \
+        gzip \
+        locales
+
+    # Fix locale (critical for nvim icons/TUI)
+    locale-gen en_US.UTF-8
+
+    # --- 3. Install Neovim v0.11.5 ---
+    NVIM_VER="v0.11.5"
+    echo "Installing Neovim $NVIM_VER..."
+    mkdir -p /opt/nvim
+    curl -LO "https://github.com/neovim/neovim/releases/download/${NVIM_VER}/nvim-linux-x86_64.tar.gz"
+    tar -C /opt/nvim -xzf nvim-linux-x86_64.tar.gz --strip-components=1
+    rm nvim-linux-x86_64.tar.gz
+
+    # --- 4. Install Ripgrep (rg) ---
+    RG_VER="14.1.0"
+    curl -LO "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VER}/ripgrep_${RG_VER}-1_amd64.deb"
+    dpkg -i ripgrep_${RG_VER}-1_amd64.deb
+    rm ripgrep_${RG_VER}-1_amd64.deb
+
+    # --- 5. Install fd (fd-find) ---
+    apt-get install -y fd-find
+    ln -s $(which fdfind) /usr/local/bin/fd
+
+    # --- 6. Install Lazygit ---
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    echo "Installing Lazygit v$LAZYGIT_VERSION..."
+    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    tar xf lazygit.tar.gz lazygit
+    install lazygit /usr/local/bin
+    rm lazygit lazygit.tar.gz
+
+    # --- 7. Install Tree-sitter CLI ---
+    npm install -g tree-sitter-cli
+
+    # --- Cleanup ---
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export PATH=/opt/nvim/bin:$PATH
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export XDG_CONFIG_HOME=$HOME/.config
+    
+    # FORCE INTERNAL COMPILERS (Fixes the "gcc not found" / panic errors)
+    export CC=/usr/bin/gcc
+    export CXX=/usr/bin/g++
+    
+    # 2. Unset host include paths so GCC finds standard headers (stdbool.h, etc.)
+    unset CPATH
+    unset C_INCLUDE_PATH
+    unset CPLUS_INCLUDE_PATH
+    unset OBJC_INCLUDE_PATH
+
+%runscript
+    exec /opt/nvim/bin/nvim "$@"
+
+%labels
+    Author User
+    Version 1.1
+    NeovimVersion v0.11.5
+    NodeVersion v22.x
