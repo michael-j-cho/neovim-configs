@@ -1,0 +1,19 @@
+name: nvim
+channels:
+  - defaults
+dependencies:
+  - gcc_linux-64
+  - git
+  - conda-forge::nvim
+  - gxx_linux-64
+  - curl
+  - tree-sitter-cli
+  - nodejs
+  - ruff
+  - fd-find
+  - ripgrep
+  - lua-language-server
+  - clang-tools
+  - pyright
+  - lazygit
+prefix: /home/x-mcho/.conda/envs/2024.02-py311/nvim
