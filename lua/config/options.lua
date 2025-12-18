@@ -9,28 +9,22 @@ vim.opt.clipboard = ""
 -- Choose correct environment for python
 vim.g.python3_host_prog = vim.fn.expand("~/.config/nvim/venv/bin/python")
 
--- 1. Tell Neovim "I know what I'm doing, use this specific tool"
-vim.g.clipboard = {
-  name = "OSC 52 (Copy Only)",
-  copy = {
-    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-  },
-  paste = {
-    -- DISCONNECT PASTE: Return an empty list immediately.
-    -- This prevents Neovim from waiting for a response that will never arrive.
-    ["+"] = function()
-      return {}
-    end,
-    ["*"] = function()
-      return {}
-    end,
-  },
-}
+-- Clipboard pasting across ssh instnaces
+vim.api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    if vim.v.event.operator == "y" then
+      local yanked_text = vim.fn.getreg('"')
+      -- Ensure we are on Neovim 0.10+ for this require to work
+      local ok, osc52 = pcall(require, "vim.ui.clipboard.osc52")
+      if ok then
+        osc52.copy("+")(vim.split(yanked_text, "\n"))
+      end
+    end
+  end,
+  desc = "Copy to OSC52 (System Clipboard) on Yank",
+})
 
--- 2. Link the system registers
-vim.opt.clipboard = "unnamedplus"
-
+-- Disable auto comments
 vim.api.nvim_create_autocmd("BufEnter", {
   callback = function()
     vim.opt.formatoptions:remove({ "c", "r", "o" })
