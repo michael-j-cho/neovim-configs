@@ -11,6 +11,7 @@ return {
         -- 2. Fix the "Ignored" files (in .gitignore)
         -- We break the link and make them bright White/Blue
         vim.api.nvim_set_hl(0, "SnacksPickerGitStatusIgnored", { fg = "#c0caf5", bold = false })
+        vim.api.nvim_set_hl(0, "SnacksPickerPathIgnored", { fg = "#626a8e", bold = false })
 
         -- 3. (Optional) Fix the "Modified" files status
         vim.api.nvim_set_hl(0, "SnacksPickerGitStatusModified", { fg = "#c3977a", bold = false })
